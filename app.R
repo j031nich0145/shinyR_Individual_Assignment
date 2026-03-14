@@ -1,6 +1,7 @@
-# app.R — Disaster Dash (Minimal R Shiny)
+# app.R — Disaster Dash 
 # Global Disaster Impact & Humanitarian Aid (2018–2024)
 #
+# Adapted from DSCI 532 group 18 project in Shiny Python with the help of Claude Sonnet 4.5
 # Dependencies: shiny, dplyr, plotly, bslib
 # Data:         data/global_disaster_response_2018_2024.csv (relative to this file)
 
