@@ -72,7 +72,7 @@ QUESTION_MAP <- c(
 )
 
 # ── Data ────────────────────────────────────────────────────────────────────────
-df      <- read.csv("data/raw/global_disaster_response_2018_2024.csv")
+df      <- read.csv("data/global_disaster_response_2018_2024.csv")
 df$date <- as.Date(df$date)
 
 # ── UI ──────────────────────────────────────────────────────────────────────────
@@ -239,6 +239,7 @@ server <- function(input, output, session) {
 
     plot_geo(agg, locations = ~iso3) |>
       add_trace(
+        type       = "choropleth",
         z          = agg[[metric]],
         text       = ~hover,
         hoverinfo  = "text",
@@ -273,19 +274,19 @@ server <- function(input, output, session) {
 
     grp <- data |>
       group_by(disaster_type) |>
-      summarise(val = stat_fn(.data[[column]]), .groups = "drop") |>
+      summarise(val = stat_fn(get(column)), .groups = "drop") |>
       arrange(desc(val)) |>
-      mutate(fmt = sapply(val, fmt_currency))
+      mutate(
+        fmt   = sapply(val, fmt_currency),
+        # map value to a teal gradient: low = #99f6e4, high = #134e4a
+        color = colorRampPalette(c("#99f6e4", "#0d9488", "#134e4a"))(n())[rank(val)]
+      )
 
     plot_ly(grp,
       x = ~disaster_type, y = ~val, type = "bar",
       text = ~fmt, textposition = "outside",
       hovertemplate = paste0("<b>%{x}</b><br>", y_label, ": %{text}<extra></extra>"),
-      marker = list(
-        color     = ~val,
-        colorscale = list(c(0, "#0d9488"), c(1, "#134e4a")),
-        showscale = FALSE
-      )
+      marker = list(color = ~color)
     ) |>
       layout(
         title       = list(text = paste0(y_label, "  <i style='font-size:10px'>(", stat_lbl, ")</i>"),
