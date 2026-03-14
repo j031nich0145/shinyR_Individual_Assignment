@@ -72,11 +72,7 @@ QUESTION_MAP <- c(
 )
 
 # ── Data ────────────────────────────────────────────────────────────────────────
-data_path <- file.path(dirname(getwd()), "data", "global_disaster_response_2018_2024.csv")
-if (!file.exists(data_path)) {
-  data_path <- file.path("data", "global_disaster_response_2018_2024.csv")
-}
-df      <- read.csv(data_path)
+df      <- read.csv("data/raw/global_disaster_response_2018_2024.csv")
 df$date <- as.Date(df$date)
 
 # ── UI ──────────────────────────────────────────────────────────────────────────
