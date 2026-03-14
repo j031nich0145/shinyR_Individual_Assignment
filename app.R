@@ -72,7 +72,11 @@ QUESTION_MAP <- c(
 )
 
 # ── Data ────────────────────────────────────────────────────────────────────────
-df      <- read.csv("data/global_disaster_response_2018_2024.csv")
+data_path <- file.path(dirname(getwd()), "data", "global_disaster_response_2018_2024.csv")
+if (!file.exists(data_path)) {
+  data_path <- file.path("data", "global_disaster_response_2018_2024.csv")
+}
+df      <- read.csv(data_path)
 df$date <- as.Date(df$date)
 
 # ── UI ──────────────────────────────────────────────────────────────────────────
@@ -237,23 +241,24 @@ server <- function(input, output, session) {
         )
       )
 
-    plot_geo(agg, locations = ~iso3) |>
-      add_trace(
-        type       = "choropleth",
-        z          = agg[[metric]],
-        text       = ~hover,
-        hoverinfo  = "text",
-        colorscale = "Viridis",
-        marker     = list(line = list(color = "#94a3b8", width = 0.5)),
-        colorbar   = list(title = MAP_METRICS[metric], thickness = 12, len = 0.55)
-      ) |>
+    plot_ly(
+      agg,
+      type        = "choropleth",
+      locations   = ~iso3,
+      z           = agg[[metric]],
+      text        = ~hover,
+      hoverinfo   = "text",
+      colorscale  = "Viridis",
+      marker      = list(line = list(color = "#94a3b8", width = 0.5)),
+      colorbar    = list(title = MAP_METRICS[metric], thickness = 12, len = 0.55)
+    ) |>
       layout(
         title = list(text = QUESTION_MAP[metric], font = list(size = 12, color = "#64748b")),
         geo = list(
           projection    = list(type = "natural earth"),
           fitbounds     = "locations",
           showframe     = FALSE,
-          showcountries = TRUE,  countrycolor  = "#64748b",
+          showcountries = TRUE,  countrycolor   = "#64748b",
           showcoastlines = TRUE, coastlinecolor = "#64748b",
           showland      = TRUE,  landcolor      = "#e8edf4",
           showocean     = TRUE,  oceancolor     = "#dbeafe",
@@ -269,12 +274,18 @@ server <- function(input, output, session) {
     data <- filtered()
     validate(need(nrow(data) > 0, "No data — adjust your filters."))
 
-    stat_fn <- switch(input$summary_stat, sum = sum, mean = mean, min = min, max = max)
+    stat_fn <- switch(input$summary_stat,
+      "sum"  = function(x) sum(x,  na.rm = TRUE),
+      "mean" = function(x) mean(x, na.rm = TRUE),
+      "min"  = function(x) min(x,  na.rm = TRUE),
+      "max"  = function(x) max(x,  na.rm = TRUE),
+      function(x) sum(x, na.rm = TRUE)
+    )
     stat_lbl <- SUMMARY_CHOICES[input$summary_stat]
 
     grp <- data |>
       group_by(disaster_type) |>
-      summarise(val = stat_fn(get(column)), .groups = "drop") |>
+      summarise(val = stat_fn(.data[[column]]), .groups = "drop") |>
       arrange(desc(val)) |>
       mutate(
         fmt   = sapply(val, fmt_currency),
