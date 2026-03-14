@@ -239,14 +239,15 @@ server <- function(input, output, session) {
 
     plot_ly(
       agg,
-      type        = "choropleth",
-      locations   = ~iso3,
-      z           = agg[[metric]],
-      text        = ~hover,
-      hoverinfo   = "text",
-      colorscale  = "Viridis",
-      marker      = list(line = list(color = "#94a3b8", width = 0.5)),
-      colorbar    = list(title = MAP_METRICS[metric], thickness = 12, len = 0.55)
+      type         = "choropleth",
+      locations    = ~iso3,
+      locationmode = "ISO-3",
+      z            = agg[[metric]],
+      text         = ~hover,
+      hoverinfo    = "text",
+      colorscale   = "Viridis",
+      marker       = list(line = list(color = "#94a3b8", width = 0.5)),
+      colorbar     = list(title = MAP_METRICS[metric], thickness = 12, len = 0.55)
     ) |>
       layout(
         title = list(text = QUESTION_MAP[metric], font = list(size = 12, color = "#64748b")),
